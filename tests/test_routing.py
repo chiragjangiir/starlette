@@ -638,6 +638,24 @@ def test_url_for_with_double_mount() -> None:
     app = Starlette(routes=double_mount_routes)
     url = app.url_path_for("mount:static", path="123")
     assert url == "/mount/static/123"
+    url = app.url_path_for("mount:static", path="/123")
+    assert url == "/mount/static/123"
+
+
+def test_mount_url_path_for_with_leading_slash() -> None:
+    subroute = Route("/{path:path}", homepage, name="file")
+    mount = Mount("/static", routes=[subroute], name="static")
+    assert mount.url_path_for("static:file", path="/foo/bar") == "/static/foo/bar"
+    assert mount.url_path_for("static:file", path="foo/bar") == "/static/foo/bar"
+    assert mount.url_path_for("static:file", path="") == "/static/"
+    assert mount.url_path_for("static:file", path="/") == "/static/"
+
+
+def test_unnamed_mount_url_path_for_with_leading_slash() -> None:
+    subroute = Route("/{path:path}", homepage, name="file")
+    mount = Mount("/static", routes=[subroute])
+    assert mount.url_path_for("file", path="/foo/bar") == "/static/foo/bar"
+    assert mount.url_path_for("file", path="foo/bar") == "/static/foo/bar"
 
 
 def test_url_for_with_root_path_ending_with_slash(test_client_factory: TestClientFactory) -> None:
